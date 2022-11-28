@@ -29,10 +29,12 @@ app.get("/user", async (req, res) => {
   let userData = await prisma.user.findMany({
     select: {
       id: true,
-      name: true,
+      first_name:true,
+      last_name:true,
       email: true,
       phone: true,
-      countrycode: true
+      countrycode: true,
+      image:true
     }
   });
   res.status(200).json({
