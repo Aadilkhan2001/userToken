@@ -45,7 +45,7 @@ app.get("/user", async (req, res) => {
 
 
 app.post("/user", async (req, res) => {
-  
+
   let { phonenumber, countrycode } = req.body;
 
   let token;
@@ -77,29 +77,37 @@ app.post("/user", async (req, res) => {
   });
 });
 
-app.patch("/user", upload.single('image') ,async (req, res) => {
+app.patch("/user", upload.single('image'), async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   if (!token) {
     res.status(401).json({ message: { 'success': false, "error": "Invalid Token!!" } });
   } else {
-    console.log('here========>');
-  const imagePath = req.file.path
-  console.log('imagepath',imagePath)
-  const blob = fs.readFileSync(imagePath)
+    let data = {};
+    if (req.file) {
+      const imagePath = req.file.path
+      console.log('imagepath', imagePath)
+      const blob = fs.readFileSync(imagePath)
 
-  const uploadedImage = await s3.upload({
-    Bucket: process.env.AWS_S3_BUCKET_NAME,
-    Key: req.file.originalname,
-    Body: blob,
-  }).promise()
-  console.log('--------------> location',uploadedImage.Location)
+      const uploadedImage = await s3.upload({
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Key: req.file.originalname,
+        Body: blob
+      }).promise()
+      data["image"] = uploadedImage.Location;
+    }
+    data = { ...req.body, ...data }
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
     const updatedData = await prisma.user.update({
-      data: req.body, where: {
+      data: data, where: {
         id: decodedToken.id
       }
     })
-    res.status(200).json(updatedData);
+    res.status(200).json({
+      message: { 'success': true },
+      data: {
+        user: updatedData
+      }
+    });
   }
 });
 
