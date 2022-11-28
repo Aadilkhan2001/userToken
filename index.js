@@ -5,7 +5,7 @@ import multer from "multer";
 import AWS from 'aws-sdk'
 import fs from 'fs';
 const { sign, verify } = jwt;
-const upload = multer();
+const upload = multer({ dest: 'uploads/' });
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_ACCESS_SECRET,
@@ -82,9 +82,9 @@ app.patch("/user", upload.single('image') ,async (req, res) => {
   if (!token) {
     res.status(401).json({ message: { 'success': false, "error": "Invalid Token!!" } });
   } else {
-    
-  const imagePath = req.file.originalname
-  console.log('imagepath',req.file)
+    console.log('here========>');
+  const imagePath = req.file.path
+  console.log('imagepath',imagePath)
   const blob = fs.readFileSync(imagePath)
 
   const uploadedImage = await s3.upload({
