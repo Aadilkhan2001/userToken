@@ -140,6 +140,7 @@ app.patch("/user", upload.single("image"), async (req, res) => {
       message: "Success",
       data: {
         user: updatedData,
+        token : token
       },
     });
   }
